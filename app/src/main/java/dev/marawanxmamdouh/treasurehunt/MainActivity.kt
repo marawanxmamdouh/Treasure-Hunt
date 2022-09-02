@@ -1,13 +1,22 @@
 package dev.marawanxmamdouh.treasurehunt
 
+import android.Manifest
 import android.annotation.TargetApi
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.LocationManager
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.SavedStateViewModelFactory
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.location.GeofencingClient
+import com.google.android.material.snackbar.Snackbar
 import dev.marawanxmamdouh.treasurehunt.databinding.ActivityMainBinding
 
 /**
@@ -34,7 +43,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var geofencingClient: GeofencingClient
     private lateinit var viewModel: GeofenceViewModel
 
-    // TODO: Step 2 add in variable to check if device is running Q or later
+    // Check if device is running Q or later
+    private val runningQOrLater = android.os.Build.VERSION.SDK_INT >=
+            android.os.Build.VERSION_CODES.Q
 
     // A PendingIntent for the Broadcast Receiver that handles geofence transitions.
     // TODO: Step 8 add in a pending intent
@@ -134,6 +145,95 @@ class MainActivity : AppCompatActivity() {
      */
     private fun removeGeofences() {
         // TODO: Step 12 add in code to remove the geofences
+    }
+
+    /**
+     * Request Permissions
+     */
+
+    @TargetApi(29)
+    private fun isForegroundAndBackgroundLocationPermissionsApproved(): Boolean {
+        val isForegroundLocationApproved = (
+                PackageManager.PERMISSION_GRANTED ==
+                        ActivityCompat.checkSelfPermission(
+                            this,
+                            Manifest.permission.ACCESS_FINE_LOCATION
+                        ))
+        val isBackgroundPermissionApproved =
+            if (runningQOrLater) {
+                PackageManager.PERMISSION_GRANTED ==
+                        ActivityCompat.checkSelfPermission(
+                            this, Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                        )
+            } else {
+                true
+            }
+        return isForegroundLocationApproved && isBackgroundPermissionApproved
+    }
+
+    @TargetApi(29)
+    private fun requestForegroundAndBackgroundLocationPermissions() {
+        if (isForegroundAndBackgroundLocationPermissionsApproved())
+            return
+        var permissionsArray = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+        val resultCode = when {
+            runningQOrLater -> {
+                permissionsArray += Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE
+            }
+            else -> REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE
+        }
+        Log.d(TAG, "Request foreground only location permission")
+        ActivityCompat.requestPermissions(
+            this@MainActivity,
+            permissionsArray,
+            resultCode
+        )
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        Log.d(TAG, "onRequestPermissionResult")
+        val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            if (
+                grantResults.isEmpty() ||
+                grantResults[LOCATION_PERMISSION_INDEX] == PackageManager.PERMISSION_DENIED ||
+                (requestCode == REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE &&
+                        grantResults[BACKGROUND_LOCATION_PERMISSION_INDEX] ==
+                        PackageManager.PERMISSION_DENIED)
+            ) {
+                Snackbar.make(
+                    binding.activityMapsMain,
+                    R.string.permission_denied_explanation,
+                    Snackbar.LENGTH_INDEFINITE
+                )
+                    .setAction(R.string.settings) {
+                        startActivity(Intent().apply {
+                            action = Settings.ACTION_LOCATION_SOURCE_SETTINGS
+                            data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        })
+                    }.show()
+            } else {
+                checkDeviceLocationSettingsAndStartGeofence()
+            }
+        } else {
+            Snackbar.make(
+                binding.activityMapsMain,
+                "Please turn on location",
+                Snackbar.LENGTH_INDEFINITE
+            ).setAction(R.string.settings) {
+                startActivity(Intent().apply {
+                    action = Settings.ACTION_LOCATION_SOURCE_SETTINGS
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                })
+            }.show()
+        }
     }
 
     companion object {
