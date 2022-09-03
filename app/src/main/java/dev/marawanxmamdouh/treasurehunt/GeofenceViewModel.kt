@@ -24,7 +24,7 @@ class GeofenceViewModel(state: SavedStateHandle) : ViewModel() {
         get() = _geofenceIndex
 
     val geofenceHintResourceId = Transformations.map(geofenceIndex) {
-        val index = geofenceIndex?.value ?: -1
+        val index = geofenceIndex.value ?: -1
         when {
             index < 0 -> R.string.not_started_hint
             index < GeofencingConstants.NUM_LANDMARKS -> GeofencingConstants.LANDMARK_DATA[geofenceIndex.value!!].hint
