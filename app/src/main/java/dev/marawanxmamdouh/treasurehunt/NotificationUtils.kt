@@ -74,6 +74,7 @@ fun NotificationManager.sendGeofenceEnteredNotification(context: Context, foundI
         .setSmallIcon(R.drawable.map_small)
         .setStyle(bigPicStyle)
         .setLargeIcon(mapImage)
+        .setAutoCancel(true)
 
     notify(NOTIFICATION_ID, builder.build())
 }
