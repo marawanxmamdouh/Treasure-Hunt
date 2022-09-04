@@ -1,7 +1,6 @@
 package dev.marawanxmamdouh.treasurehunt
 
 import android.Manifest
-import android.annotation.TargetApi
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.IntentSender
@@ -49,8 +48,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var viewModel: GeofenceViewModel
 
     // Check if device is running Q or later
-    private val runningQOrLater = android.os.Build.VERSION.SDK_INT >=
-            android.os.Build.VERSION_CODES.Q
+    private val runningQOrLater = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
 
     // A PendingIntent for the Broadcast Receiver that handles geofence transitions.
     private val geofencePendingIntent: PendingIntent by lazy {
@@ -86,17 +84,6 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         checkPermissionsAndStartGeofencing()
-    }
-
-    /*
-     *  When we get the result from asking the user to turn on device location, we call
-     *  checkDeviceLocationSettingsAndStartGeofence again to make sure it's actually on, but
-     *  we don't resolve the check to keep the user from seeing an endless loop.
-     */
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        // TODO: Step 7 add code to check that the user turned on their device location and ask
-        //  again if they did not
     }
 
     /*
@@ -252,8 +239,6 @@ class MainActivity : AppCompatActivity() {
     /**
      * Request Permissions
      */
-
-    @TargetApi(29)
     private fun isForegroundAndBackgroundLocationPermissionsApproved(): Boolean {
         val isForegroundLocationApproved = (
                 PackageManager.PERMISSION_GRANTED ==
@@ -273,7 +258,6 @@ class MainActivity : AppCompatActivity() {
         return isForegroundLocationApproved && isBackgroundPermissionApproved
     }
 
-    @TargetApi(29)
     private fun requestForegroundAndBackgroundLocationPermissions() {
         if (isForegroundAndBackgroundLocationPermissionsApproved())
             return
