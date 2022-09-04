@@ -5,9 +5,13 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
+import android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Build
+import android.service.autofill.Validators.or
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 
 /*
@@ -41,6 +45,7 @@ fun createChannel(context: Context) {
  * entered notification.  It sends a custom notification based on the name string associated
  * with the LANDMARK_DATA from GeofencingConstatns in the GeofenceUtils file.
  */
+@RequiresApi(Build.VERSION_CODES.S)
 fun NotificationManager.sendGeofenceEnteredNotification(context: Context, foundIndex: Int) {
     val contentIntent = Intent(context, MainActivity::class.java)
     contentIntent.putExtra(GeofencingConstants.EXTRA_GEOFENCE_INDEX, foundIndex)
@@ -48,7 +53,7 @@ fun NotificationManager.sendGeofenceEnteredNotification(context: Context, foundI
         context,
         NOTIFICATION_ID,
         contentIntent,
-        PendingIntent.FLAG_UPDATE_CURRENT
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
     val mapImage = BitmapFactory.decodeResource(
         context.resources,

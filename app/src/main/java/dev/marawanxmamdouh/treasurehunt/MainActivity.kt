@@ -41,7 +41,7 @@ private const val LOCATION_PERMISSION_INDEX = 0
 private const val BACKGROUND_LOCATION_PERMISSION_INDEX = 1
 private const val REQUEST_TURN_DEVICE_LOCATION_ON = 29
 
-@RequiresApi(Build.VERSION_CODES.M)
+@RequiresApi(Build.VERSION_CODES.S)
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
             this,
             0,
             intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
         )
     }
 
@@ -302,7 +302,7 @@ class MainActivity : AppCompatActivity() {
             )
                 .setAction(R.string.settings) {
                     startActivity(Intent().apply {
-                        action = Settings.ACTION_LOCATION_SOURCE_SETTINGS
+                        action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
                         data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     })
@@ -314,6 +314,6 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         internal const val ACTION_GEOFENCE_EVENT =
-            "HuntMainActivity.treasureHunt.action.ACTION_GEOFENCE_EVENT"
+            "MainActivity.ACTION_GEOFENCE_EVENT"
     }
 }
